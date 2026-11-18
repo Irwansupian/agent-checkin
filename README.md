@@ -31,6 +31,17 @@ Ask your AI agent (with the Binance Agentic Wallet skill) to preview a
 `checkIn()` call to the contract above with value 0, confirm the
 preview, and execute. The full prompt is on the live site.
 
+## Review materials
+
+- **Demo video (60 s, with narration):**
+  https://irwansupian.github.io/agent-checkin/agent-checkin-demo.mp4
+- **Technical documentation:** [TECHNICAL.md](https://github.com/Irwansupian/agent-checkin/blob/main/TECHNICAL.md)
+- **Screenshots:**
+  [full page](https://irwansupian.github.io/agent-checkin/media/screenshot-full.png) ·
+  [hero](https://irwansupian.github.io/agent-checkin/media/screenshot-hero.png) ·
+  [agent prompt](https://irwansupian.github.io/agent-checkin/media/screenshot-agent-prompt.png) ·
+  [how it works](https://irwansupian.github.io/agent-checkin/media/screenshot-how-it-works.png)
+
 ## Repository layout
 
 - `contracts/AgentCheckIn.sol` — the whole contract (MIT, Solidity 0.8.26)
