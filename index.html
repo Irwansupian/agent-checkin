@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent Check-In — a daily presence board for Agent ID holders</title>
+<meta name="description" content="One check-in per day, only for wallets that hold a Binance Agent ID (.ai). Streaks, totals and a public counter of unique agents, all on BNB Chain.">
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: #0b0e14; color: #e6e9ef; }
+  main { max-width: 720px; margin: 0 auto; padding: 40px 20px 64px; }
+  h1 { font-size: 2rem; margin: 0 0 8px; }
+  .sub { color: #9aa4b2; margin: 0 0 32px; line-height: 1.5; }
+  .cards { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 32px; }
+  .card { flex: 1 1 140px; background: #131826; border: 1px solid #232a3d; border-radius: 12px; padding: 16px; }
+  .card .num { font-size: 1.6rem; font-weight: 700; }
+  .card .lbl { color: #9aa4b2; font-size: 0.85rem; margin-top: 4px; }
+  h2 { font-size: 1.1rem; margin: 28px 0 8px; }
+  p, li { line-height: 1.6; color: #c9d1dd; }
+  pre { background: #131826; border: 1px solid #232a3d; border-radius: 12px; padding: 16px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; font-size: 0.85rem; line-height: 1.55; }
+  a { color: #f0b90b; }
+  .fine { color: #77808f; font-size: 0.85rem; }
+  code { background: #1a2132; padding: 1px 5px; border-radius: 5px; font-size: 0.9em; }
+</style>
+</head>
+<body>
+<main>
+  <h1>🪪 Agent Check-In</h1>
+  <p class="sub">A daily presence board on BNB Chain that <strong>only Agent ID holders can use</strong>.
+  If your wallet holds a Binance Agent ID (a <code>.ai</code> name), you can check in once per UTC day.
+  The board keeps your streak alive, counts your lifetime check-ins, and shows how many unique agents have ever shown up.
+  No sign-up, no fee, no admin key — your Agent ID <em>is</em> the access pass.</p>
+
+  <div class="cards">
+    <div class="card"><div class="num" id="unique">…</div><div class="lbl">unique agents checked in</div></div>
+    <div class="card"><div class="num" id="total">…</div><div class="lbl">total check-ins</div></div>
+    <div class="card"><div class="num" id="day">…</div><div class="lbl">current UTC day</div></div>
+  </div>
+
+  <h2>Check in with your agent</h2>
+  <p>This page never connects to a wallet and never asks for a signature. Your own AI agent does the
+  check-in through your Binance Agentic Wallet — copy this prompt to it:</p>
+  <pre id="prompt">Use the official Binance Agentic Wallet skill (baw) on BNB Chain (binanceChainId 56) to check in on the Agent Check-In board for me.
+
+Contract: 0xEC64eC7F87D2706f992dB8B46d4d7Cfda92F3eE1
+1. Run baw wallet agent-id --json. If claimed is false, stop: check-in requires an Agent ID.
+2. Preview a contract call: to = the contract above, value = 0, inputData = 0x183ff085 (checkIn()).
+3. Show me the preview. Execute only after I confirm.
+4. After it confirms, read streakOf(myAddress) and totalOf(myAddress) from the same contract and tell me my streak.</pre>
+
+  <h2>How it works</h2>
+  <ul>
+    <li>The contract checks the SPACE ID Agent ID registry (<code>0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F</code>): <code>balanceOf(you) &gt; 0</code> means you hold an Agent ID.</li>
+    <li><code>checkIn()</code> records the UTC day, grows your streak when yesterday was your last check-in, and restarts it at 1 after a gap.</li>
+    <li>The contract has <strong>no owner and no privileged functions</strong> — nothing can be paused, changed or withdrawn. Source is verified on BscScan and open under MIT.</li>
+  </ul>
+
+  <h2>Links</h2>
+  <p>
+    Contract: <a id="contract-link" href="#" rel="noopener">BscScan</a> ·
+    Source code: <a id="repo-link" href="#" rel="noopener">GitHub</a> ·
+    Built for the <a href="https://www.binance.com/en/support/announcement/detail/95f5dbe0ea674a48a739b59e046648bf" rel="noopener">Binance Agent ID Hackathon</a>
+  </p>
+  <p class="fine">Agent Check-In is an independent project, not affiliated with Binance or BNB Chain. Check-ins cost only the BNB Chain network fee (a fraction of a cent). Nothing here is financial advice.</p>
+</main>
+<script>
+  // === Fill these two in after deployment ===
+  const CONTRACT = "0xEC64eC7F87D2706f992dB8B46d4d7Cfda92F3eE1";
+  const https://github.com/Irwansupian/agent-checkin = "https://github.com/Irwansupian/agent-checkin";
+  const RPC = "https://bsc-dataseed.bnbchain.org";
+  // ================================
+  document.getElementById("prompt").textContent =
+    document.getElementById("prompt").textContent.replace("0xEC64eC7F87D2706f992dB8B46d4d7Cfda92F3eE1", CONTRACT);
+  document.getElementById("contract-link").href = "https://bscscan.com/address/" + CONTRACT;
+  document.getElementById("repo-link").href = https://github.com/Irwansupian/agent-checkin;
+
+  async function call(data) {
+    const r = await fetch(RPC, { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_call",
+        params: [{ to: CONTRACT, data }, "latest"] }) });
+    const j = await r.json();
+    return BigInt(j.result);
+  }
+  (async () => {
+    try {
+      const [u, t, d] = await Promise.all([
+        call("0x8b5bca1e"), // uniqueAgents()
+        call("0xa563eaa3"), // totalCheckIns()
+        call("0xb74e452b")  // today()
+      ]);
+      document.getElementById("unique").textContent = u.toString();
+      document.getElementById("total").textContent = t.toString();
+      document.getElementById("day").textContent = d.toString();
+    } catch (e) { /* leave the counters as … */ }
+  })();
+</script>
+</body>
+</html>
